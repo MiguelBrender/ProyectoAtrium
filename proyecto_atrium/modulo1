@@ -1,0 +1,515 @@
+Public tasabcv As Double
+Public sub_ves As Double
+Public sub_usd As Double
+
+Private Sub UserForm_Initialize() ' ----------------------------------------------------------------------------------------------- Formulario ; Evento: Iniciar formulario ---
+
+    
+' \ GENERADORES DE LISTADO Y FORMATO /
+
+
+    Dim i As Integer
+    Dim Elemento As Variant
+    
+    ' Bloque generador de listado "DENOMINACIÓN SOCIAL"
+    
+    With Worksheets("DATABASE")
+    
+        Dim ElementosÚnicos_DenominaciónSocial As New Collection
+        
+        i = 2
+        Me.ComboBox_Denominación_Social.Clear
+        Me.ComboBox_Denominación_Social.ColumnCount = 1
+        
+        On Error Resume Next
+            Do While .Cells(i, 1) <> ""
+                ElementosÚnicos_DenominaciónSocial.Add .Cells(i, 1), CStr(.Cells(i, 1))
+                i = i + 1
+            Loop
+        On Error GoTo 0
+        
+        For Each Elemento In ElementosÚnicos_DenominaciónSocial
+            Me.ComboBox_Denominación_Social.AddItem Elemento
+        Next Elemento
+    
+    End With
+    
+    ' Bloque generador de listado "RAZÓN SOCIAL"
+    
+    With Worksheets("DATABASE")
+    
+        Dim ElementosÚnicos_RazónSocial As New Collection
+    
+        i = 2
+        Me.ComboBox_Razón_Social.Clear
+        Me.ComboBox_Razón_Social.ColumnCount = 1
+        
+        On Error Resume Next
+            Do While .Cells(i, 8) <> ""
+                ElementosÚnicos_RazónSocial.Add .Cells(i, 8), CStr(.Cells(i, 8))
+                i = i + 1
+            Loop
+        On Error GoTo 0
+        
+        For Each Elemento In ElementosÚnicos_RazónSocial
+            Me.ComboBox_Razón_Social.AddItem Elemento
+        Next Elemento
+        
+    End With
+    
+    ' Bloque generador de listado "CÉDULA/RIF"
+    
+    With Worksheets("DATABASE")
+    
+        Dim ElementosÚnicos_CédulaRif As New Collection
+    
+        i = 2
+        Me.ComboBox_Cédula_Rif.Clear
+        Me.ComboBox_Cédula_Rif.ColumnCount = 1
+        
+        On Error Resume Next
+            Do While .Cells(i, 9) <> ""
+                ElementosÚnicos_CédulaRif.Add .Cells(i, 9), CStr(.Cells(i, 9))
+                i = i + 1
+            Loop
+        On Error GoTo 0
+        
+        For Each Elemento In ElementosÚnicos_CédulaRif
+            Me.ComboBox_Cédula_Rif.AddItem Elemento
+        Next Elemento
+            
+    End With
+    
+    
+' \ OTROS FORMATOS PREDETERMINADOS /
+
+    tasabcv = Hoja2.Range("U2").value
+    
+    TextBox_Fecha.ForeColor = RGB(0, 0, 150)
+    TextBox_Fecha.TextAlign = fmTextAlignCenter
+    TextBox_Fecha.value = "dd/mm/aaaa"
+    
+    TextBox_IVA.value = FormatNumber(16, 2)
+    TextBox_IGTF.value = FormatNumber(3, 2)
+    
+    OptionButton_Bolívares.value = True
+    userform_tasa_bcv.TextAlign = fmTextAlignCenter
+    userform_tasa_bcv.Caption = "(BCV) Bs. " & tasabcv
+    
+End Sub
+
+Private Sub ComboBox_Denominación_Social_AfterUpdate() ' -------------------------------------------------------------- Casilla Denominación social ; Evento: Al actualizar ---
+
+    If ComboBox_Denominación_Social.value = "" Then Exit Sub
+    
+    Set hoja = Sheets("DATABASE")
+    Set fila = hoja.Range("A:A").Find(ComboBox_Denominación_Social, LookIn:=xlValues, lookat:=xlWhole)
+    
+    If fila Is Nothing Then
+        Exit Sub
+    Else
+        TextBox_Máquina_Fiscal.value = hoja.Range("B" & fila.Row)
+        TextBox_Rif_Contratante.value = hoja.Range("C" & fila.Row)
+        TextBox_Dirección_Contratante.value = hoja.Range("G" & fila.Row)
+    End If
+    
+End Sub
+
+Private Sub TextBox_Fecha_Click() ' ------------------------------------------------------------------------------------ Casilla Fecha de emisión ; Evento: Presionar Enter ---
+
+    TextBox_Fecha.ForeColor = RGB(0, 0, 0)
+    TextBox_Fecha.TextAlign = fmTextAlignLeft
+    TextBox_Fecha.value = ""
+
+End Sub
+
+Private Sub TextBox_Fecha_Enter() ' ------------------------------------------------------------------------------------ Casilla Fecha de emisión ; Evento: Presionar Enter ---
+
+    TextBox_Fecha.ForeColor = RGB(0, 0, 0)
+    TextBox_Fecha.TextAlign = fmTextAlignLeft
+    TextBox_Fecha.value = ""
+
+End Sub
+
+Private Sub TextBox_Fecha_AfterUpdate() ' -------------------------------------------------------------------------------- Casilla Fecha de emisión ; Evento: Al actualizar ---
+
+    If Len(TextBox_Fecha) = 6 Then
+        TextBox_Fecha.value = Format(TextBox_Fecha.value, "##/##/##")
+    ElseIf Len(TextBox_Fecha) = 8 Then
+        TextBox_Fecha.value = Format(TextBox_Fecha.value, "##/##/####")
+    Else
+        MsgBox "Formato de fecha inválido." & vbCrLf & vbCrLf & "Debe ingresar 6 carácteres (DD/MM/AA) u 8 carácteres (DD/MM/AAAA) sin slashes u otros carácteres especiales."
+        
+        TextBox_Fecha.ForeColor = RGB(0, 0, 150)
+        TextBox_Fecha.TextAlign = fmTextAlignCenter
+        TextBox_Fecha.value = "dd/mm/aaaa"
+        
+    End If
+
+End Sub
+
+Private Sub ComboBox_Razón_Social_AfterUpdate() ' ---------------------------------------------------------------------------- Casilla Razón social ; Evento: Al actualizar ---
+
+
+    If ComboBox_Razón_Social.value = "" Then Exit Sub
+    
+    Set hoja = Sheets("DATABASE")
+    Set fila = hoja.Range("H:H").Find(ComboBox_Razón_Social, LookIn:=xlValues, lookat:=xlWhole)
+    
+    If fila Is Nothing Then
+        Exit Sub
+    Else
+        ComboBox_Cédula_Rif.value = hoja.Range("I" & fila.Row)
+        TextBox_Dirección.value = hoja.Range("J" & fila.Row)
+        TextBox_Contacto.value = hoja.Range("K" & fila.Row)
+    End If
+
+End Sub
+
+Private Sub ComboBox_Cédula_Rif_AfterUpdate() ' ---------------------------------------------------------------------- Casilla Número de Cédula/Rif ; Evento: Al actualizar ---
+
+    If ComboBox_Cédula_Rif.value = "" Then Exit Sub
+    
+    Set hoja = Sheets("DATABASE")
+    Set fila = hoja.Range("I:I").Find(ComboBox_Cédula_Rif, LookIn:=xlValues, lookat:=xlWhole)
+    
+    If fila Is Nothing Then
+        Exit Sub
+    Else
+        ComboBox_Razón_Social.value = hoja.Range("H" & fila.Row)
+        TextBox_Dirección.value = hoja.Range("J" & fila.Row)
+        TextBox_Contacto.value = hoja.Range("K" & fila.Row)
+    End If
+
+End Sub
+
+Private Sub TextBox_Contacto_AfterUpdate() ' --------------------------------------------------------------------------- Casilla Número de contacto ; Evento: Al actualizar ---
+    
+    If TextBox_Contacto.value > 9999999 Then
+        TextBox_Contacto.value = Format(TextBox_Contacto.value, "(###) ###-####")
+    Else
+        TextBox_Contacto.value = Format(TextBox_Contacto.value, "###-####")
+    End If
+    
+End Sub
+
+Private Sub TextBox_IVA_AfterUpdate() ' ----------------------------------------------------------------------------------------------- Casilla IVA ; Evento: Al actualizar ---
+
+    TextBox_IVA.value = FormatNumber(TextBox_IVA.value, 2)
+    
+End Sub
+
+Private Sub TextBox_IGTF_AfterUpdate() ' --------------------------------------------------------------------------------------------- Casilla IGTF ; Evento: Al actualizar ---
+
+    TextBox_IGTF.value = FormatNumber(TextBox_IGTF.value, 2)
+    
+End Sub
+
+Private Sub TextBox_Subtotal_AfterUpdate() ' ------------------------------------------------------------------------------------- Casilla Subtotal ; Evento: Al actualizar ---
+    
+    On Error Resume Next
+    
+    If OptionButton_Bolívares.value = True Then
+        sub_ves = TextBox_Subtotal.value
+        TextBox_Subtotal.value = FormatNumber(sub_ves, 2)
+    Else
+        sub_usd = TextBox_Subtotal.value
+        TextBox_Subtotal.value = FormatNumber(sub_usd * tasabcv, 2)
+    End If
+    
+    On Error GoTo 0
+    
+End Sub
+
+Private Sub TextBox_Total_AfterUpdate() ' --------------------------------------------------------------------------------- Casilla Total declarado ; Evento: Al actualizar ---
+
+    TextBox_Total.value = FormatNumber(TextBox_Total, 2)
+    
+End Sub
+
+Private Sub TextBox_Total_Enter() ' -------------------------------------------------------------------------------------- Casilla Total declarado; Evento: Presionar Enter ---
+
+    Dim valor_ves As Double
+    Dim valor_usd As Double
+    
+    On Error Resume Next
+    
+    If OptionButton_Bolívares.value = True Then
+        valor_ves = sub_ves + (sub_ves * (TextBox_IVA.value / 100)) + (sub_ves * (TextBox_IGTF.value / 100))
+        TextBox_Total.value = FormatNumber(valor_ves, 2)
+    Else
+        valor_ves = sub_usd + (sub_usd * (TextBox_IVA.value / 100)) + (sub_usd * (TextBox_IGTF.value / 100))
+        valor_usd = valor_ves * tasabcv
+        TextBox_Total.value = FormatNumber(valor_usd, 2)
+    End If
+    
+    On Error GoTo 0
+
+End Sub
+
+Private Sub CommandButton_Registrar_Click() ' --------------------------------------------------------------------------------- Comando Registrar ; Evento: Presionar botón ---
+
+
+' \ VALIDADORES DE INFORMACIÓN /
+
+
+    ' Bloque de validación - Datos del emisor
+
+    If ComboBox_Denominación_Social.value = "" Then
+        MsgBox "El campo (Denominación Social) está vacío."
+        Exit Sub
+    End If
+    
+    If TextBox_Máquina_Fiscal.value = "" Then
+        MsgBox "El campo (N° de Máquina Fiscal) está vacío."
+        Exit Sub
+    End If
+
+    If TextBox_Rif_Contratante.value = "" Then
+        MsgBox "El campo (Rif del contratante) está vacío."
+        Exit Sub
+    End If
+
+    If TextBox_Factura.value = "" Then
+        MsgBox "El campo (Número de factura) está vacío."
+        Exit Sub
+    End If
+    
+    If TextBox_Fecha.value = "" Then
+        MsgBox "El campo (Fecha de emisión) está vacío."
+        Exit Sub
+    End If
+    
+    If TextBox_Dirección_Contratante.value = "" Then
+        MsgBox "El campo (Dirección Fiscal) está vacío."
+        Exit Sub
+    End If
+    
+    ' Bloque de validación - Datos del receptor
+    
+    If ComboBox_Razón_Social.value = "" Then
+        MsgBox "El campo (Razón social) está vacío."
+        Exit Sub
+    End If
+    
+    If ComboBox_Cédula_Rif.value = "" Then
+        MsgBox "El campo (Cédula de identidad / Rif) está vacío."
+        Exit Sub
+    End If
+
+    If TextBox_Dirección.value = "" Then
+        MsgBox "El campo (Dirección) está vacío."
+        Exit Sub
+    End If
+
+    If TextBox_Contacto.value = "" Then
+        MsgBox "El campo (Número de contacto) está vacío."
+        Exit Sub
+    End If
+    
+    ' Bloque de validación - Datos de facturación
+    
+    If TextBox_Concepto.value = "" Then
+        MsgBox "El campo (Por concepto de) está vacío."
+        Exit Sub
+    End If
+    
+    If TextBox_Subtotal.value = "" Then
+        MsgBox "El campo (Subtotal) está vacío."
+        Exit Sub
+    End If
+
+    If TextBox_IVA.value = "" Then
+        MsgBox "El campo (IVA) está vacío."
+        Exit Sub
+    End If
+
+    If TextBox_IGTF.value = "" Then
+        MsgBox "El campo (IGTF) está vacío."
+        Exit Sub
+    End If
+    
+    If TextBox_Total.value = "" Then
+        MsgBox "El campo (Total declarado) está vacío."
+        Exit Sub
+    End If
+    
+    
+' \ PROCESO DE REGISTRO /
+    
+    
+    ' Declaración de variables
+    
+    Dim Celda_Denominación_Social As String
+    Dim Celda_Máquina_Fiscal As String
+    Dim Celda_Rif_Contratante As String
+    Dim Celda_Factura As String
+    Dim Celda_Fecha_Emisión As String
+    Dim Celda_Fecha_Registro As String
+    Dim Celda_Dirección_Contratante As String
+    Dim Celda_Razón_Social As String
+    Dim Celda_Cédula_Rif As String
+    Dim Celda_Dirección As String
+    Dim Celda_Contacto As String
+    Dim Celda_Concepto As String
+    Dim Celda_Subtotal As Double
+    Dim Celda_IVA As Double
+    Dim Celda_IGTF As Double
+    Dim Celda_Total As Double
+    Dim Elemento As Variant
+    
+    Mensaje = MsgBox("¿Desea ingresar los datos suministrados?", vbQuestion + vbYesNo, "Procesando")
+    
+    If Mensaje = vbYes Then
+    
+        Dim i As Integer
+        Dim fila_i As Integer
+        Dim fila_f As Integer
+        
+        For fila_i = 2 To 10000
+            If Hoja2.Cells(fila_i, 1) = "" Then
+                fila_f = fila_i
+                Exit For
+            End If
+        Next
+        
+        Celda_Denominación_Social = ComboBox_Denominación_Social.value
+        Celda_Máquina_Fiscal = TextBox_Máquina_Fiscal.value
+        Celda_Rif_Contratante = TextBox_Rif_Contratante.value
+        Celda_Factura = TextBox_Factura.value
+        Celda_Fecha_Emisión = TextBox_Fecha.value
+        Celda_Fecha_Registro = Format(CDate(Now), "mm/dd/yyyy")
+        Celda_Dirección_Contratante = TextBox_Dirección_Contratante.value
+        Celda_Razón_Social = ComboBox_Razón_Social.value
+        Celda_Cédula_Rif = ComboBox_Cédula_Rif.value
+        Celda_Dirección = TextBox_Dirección.value
+        Celda_Contacto = TextBox_Contacto.value
+        Celda_Concepto = TextBox_Concepto.value
+        Celda_Subtotal = TextBox_Subtotal.value
+        Celda_IVA = (TextBox_IVA.value / 100)
+        Celda_IGTF = (TextBox_IGTF.value / 100)
+        Celda_Total = TextBox_Total.value
+        
+        Hoja2.Cells(fila_f, 1) = Celda_Denominación_Social
+        Hoja2.Cells(fila_f, 2) = Celda_Máquina_Fiscal
+        Hoja2.Cells(fila_f, 3) = Celda_Rif_Contratante
+        Hoja2.Cells(fila_f, 4) = Celda_Factura
+        Hoja2.Cells(fila_f, 5) = Celda_Fecha_Emisión
+        Hoja2.Cells(fila_f, 6) = Celda_Fecha_Registro
+        Hoja2.Cells(fila_f, 7) = Celda_Dirección_Contratante
+        Hoja2.Cells(fila_f, 8) = Celda_Razón_Social
+        Hoja2.Cells(fila_f, 9) = Celda_Cédula_Rif
+        Hoja2.Cells(fila_f, 10) = Celda_Dirección
+        Hoja2.Cells(fila_f, 11) = Celda_Contacto
+        Hoja2.Cells(fila_f, 12) = Celda_Concepto
+        Hoja2.Cells(fila_f, 13) = Celda_Subtotal
+        Hoja2.Cells(fila_f, 14) = Celda_IVA
+        Hoja2.Cells(fila_f, 15) = Celda_IGTF
+        Hoja2.Cells(fila_f, 16) = Celda_Total
+        
+        
+' \ REUTILIZACIÓN DEL USERFORM /
+        
+        
+        ' Limpieza de data
+        
+        ComboBox_Denominación_Social.value = Empty
+        TextBox_Máquina_Fiscal.value = Empty
+        TextBox_Rif_Contratante.value = Empty
+        TextBox_Factura.value = Empty
+        TextBox_Fecha.value = Empty
+        TextBox_Dirección_Contratante.value = Empty
+        ComboBox_Razón_Social.value = Empty
+        ComboBox_Cédula_Rif.value = Empty
+        TextBox_Dirección.value = Empty
+        TextBox_Contacto.value = Empty
+        TextBox_Concepto.value = Empty
+        TextBox_Subtotal.value = Empty
+        TextBox_Total.value = Empty
+                
+        TextBox_IVA.value = Format(16, "0.00")
+        TextBox_IGTF.value = Format(3, "0.00")
+        
+        ' Bloque generador de listado "DENOMINACIÓN SOCIAL"
+        
+        With Worksheets("DATABASE")
+        
+            Dim ElementosÚnicos_DenominaciónSocial As New Collection
+            
+            i = 2
+            Me.ComboBox_Denominación_Social.Clear
+            Me.ComboBox_Denominación_Social.ColumnCount = 1
+            
+            On Error Resume Next
+                Do While .Cells(i, 1) <> ""
+                    ElementosÚnicos_DenominaciónSocial.Add .Cells(i, 1), CStr(.Cells(i, 1))
+                    i = i + 1
+                Loop
+            On Error GoTo 0
+            
+            For Each Elemento In ElementosÚnicos_DenominaciónSocial
+                Me.ComboBox_Denominación_Social.AddItem Elemento
+            Next Elemento
+        
+        End With
+        
+        
+        ' Bloque generador de listado "RAZÓN SOCIAL"
+        
+        With Worksheets("DATABASE")
+        
+            Dim ElementosÚnicos_RazónSocial As New Collection
+        
+            i = 2
+            Me.ComboBox_Razón_Social.Clear
+            Me.ComboBox_Razón_Social.ColumnCount = 1
+            
+            On Error Resume Next
+                Do While .Cells(i, 8) <> ""
+                    ElementosÚnicos_RazónSocial.Add .Cells(i, 8), CStr(.Cells(i, 8))
+                    i = i + 1
+                Loop
+            On Error GoTo 0
+            
+            For Each Elemento In ElementosÚnicos_RazónSocial
+                Me.ComboBox_Razón_Social.AddItem Elemento
+            Next Elemento
+            
+        End With
+        
+        ' Bloque generador de listado "CÉDULA/RIF"
+        
+        With Worksheets("DATABASE")
+        
+            Dim ElementosÚnicos_CédulaRif As New Collection
+        
+            i = 2
+            Me.ComboBox_Cédula_Rif.Clear
+            Me.ComboBox_Cédula_Rif.ColumnCount = 1
+            
+            On Error Resume Next
+                Do While .Cells(i, 9) <> ""
+                    ElementosÚnicos_CédulaRif.Add .Cells(i, 9), CStr(.Cells(i, 9))
+                    i = i + 1
+                Loop
+            On Error GoTo 0
+            
+            For Each Elemento In ElementosÚnicos_CédulaRif
+                Me.ComboBox_Cédula_Rif.AddItem Elemento
+            Next Elemento
+            
+        End With
+                
+    Else
+    
+        Exit Sub
+        
+    End If
+
+End Sub
+
+Private Sub CommandButton_Cancelar_Click() ' ----------------------------------------------------------------------------------- Comando Cancelar ; Evento: Presionar botón ---
+
+    Unload Me
+
+End Sub

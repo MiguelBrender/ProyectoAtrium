@@ -1,0 +1,138 @@
+Private Sub UserForm_Initialize()
+
+    On Error GoTo Depurar
+
+    With ListBox
+    
+        .Clear
+        .ColumnCount = 16
+        .List = Range(Cells(1, 1), Cells(1, .ColumnCount)).value
+        .RemoveItem 0
+        
+        .ColumnHeads = False
+        .ColumnWidths = "100;100;100;100;100;100;200;100;100;200;100;200;100;100;100;100"
+        
+        .TextAlign = fmTextAlignCenter
+        .BorderStyle = fmBorderStyleNone
+        
+        Dim fila As Range, filasfiltradas As Range
+        Set filasfiltradas = Hoja2.ListObjects("DATABASE").DataBodyRange.SpecialCells(xlCellTypeVisible).Rows
+        
+        For Each fila In filasfiltradas
+            
+            .AddItem
+            .List(.ListCount - 1, 0) = fila.Cells(1).value
+            .List(.ListCount - 1, 1) = fila.Cells(2).value
+            .List(.ListCount - 1, 2) = fila.Cells(3).value
+            .List(.ListCount - 1, 3) = fila.Cells(4).value
+            .List(.ListCount - 1, 4) = fila.Cells(5).value
+            .List(.ListCount - 1, 5) = fila.Cells(6).value
+            .List(.ListCount - 1, 6) = fila.Cells(7).value
+            .List(.ListCount - 1, 7) = fila.Cells(8).value
+            .List(.ListCount - 1, 8) = fila.Cells(9).value
+            .List(.ListCount - 1, 9) = fila.Cells(10).value
+            .List(.ListCount - 1, 10) = fila.Cells(11).value
+            .List(.ListCount - 1, 11) = fila.Cells(12).value
+            .List(.ListCount - 1, 12) = fila.Cells(13).value
+            .List(.ListCount - 1, 13) = fila.Cells(14).value
+            .List(.ListCount - 1, 14) = fila.Cells(15).value
+            .List(.ListCount - 1, 15) = fila.Cells(16).value
+            
+        Next fila
+
+    End With
+    
+    On Error GoTo 0
+    
+    Exit Sub
+    
+Depurar:
+    MODIFICADOR.ListBox.AddItem "No Data"
+    On Error GoTo 0
+
+End Sub
+
+Private Sub CommandButton_Buscar_Click()
+
+
+    If ComboBox_Razón_Social = "" And ComboBox_Denominación_Social = "" And TextBox_Fecha_Emisión = "" And TextBox_Fecha_Registro = "" And TextBox_Factura = "" Then
+    
+        MsgBox "Campos de búsqueda vacíos."
+    
+    Else
+    
+        Dim filtro1 As String
+        Dim filtro2 As String
+        Dim filtro3 As String
+        Dim filtro4 As String
+        Dim filtro5 As String
+        
+        filtro1 = "*" & MODIFICADOR.ComboBox_Razón_Social.value & "*"
+        filtro2 = "*" & MODIFICADOR.ComboBox_Denominación_Social.value & "*"
+        filtro3 = "*" & MODIFICADOR.TextBox_Fecha_Emisión.value & "*"
+        filtro4 = "*" & MODIFICADOR.TextBox_Fecha_Registro.value & "*"
+        filtro5 = "*" & MODIFICADOR.TextBox_Factura.value & "*"
+        
+        If Not MODIFICADOR.ComboBox_Razón_Social.value = "" Then
+            Hoja2.ListObjects("DATABASE").Range.AutoFilter Field:=8, Criteria1:=filtro1
+        End If
+        
+        If Not MODIFICADOR.ComboBox_Denominación_Social.value = "" Then
+            Hoja2.ListObjects("DATABASE").Range.AutoFilter Field:=1, Criteria1:=filtro2
+        End If
+        
+        If IsDate(MODIFICADOR.TextBox_Fecha_Emisión.value) Then
+            Hoja2.ListObjects("DATABASE").Range.AutoFilter Field:=5, Criteria1:=filtro3
+        End If
+        
+        If IsDate(MODIFICADOR.TextBox_Fecha_Registro.value) Then
+            Hoja2.ListObjects("DATABASE").Range.AutoFilter Field:=6, Criteria1:=filtro4
+        End If
+        
+        If Not MODIFICADOR.TextBox_Factura.value = "" Then
+            Hoja2.ListObjects("DATABASE").Range.AutoFilter Field:=4, Criteria1:=filtro5
+        End If
+        
+        Call UserForm_Initialize
+        
+    End If
+
+End Sub
+
+Private Sub CommandButton_Limpiar_Click()
+
+    ComboBox_Razón_Social = Empty
+    ComboBox_Denominación_Social = Empty
+    TextBox_Fecha_Emisión = Empty
+    TextBox_Fecha_Registro = Empty
+    TextBox_Factura = Empty
+    
+    Application.ScreenUpdating = False
+    Hoja2.ListObjects("DATABASE").ShowAutoFilter = False
+    Hoja2.ListObjects("DATABASE").ShowAutoFilter = True
+    Application.ScreenUpdating = True
+    
+    Call UserForm_Initialize
+
+End Sub
+
+Private Sub CommandButton_Modificar_Click()
+
+End Sub
+
+Private Sub CommandButton_Eliminar_Click()
+
+    MsgBox "Requiere permisos administrativos para realizar esta acción."
+
+End Sub
+
+Private Sub CommandButton_Cancelar_Click()
+
+    Application.ScreenUpdating = False
+    Hoja2.ListObjects("DATABASE").ShowAutoFilter = False
+    Hoja2.ListObjects("DATABASE").ShowAutoFilter = True
+    Application.ScreenUpdating = True
+
+    Unload Me
+
+End Sub
